@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -23,8 +25,11 @@ export class FavsService {
   private tracks = new Map<string, ITrack>();
 
   constructor(
+    @Inject(forwardRef(() => TrackService))
     private readonly tracksService: TrackService,
+    @Inject(forwardRef(() => AlbumService))
     private readonly albumsService: AlbumService,
+    @Inject(forwardRef(() => ArtistService))
     private readonly artistsService: ArtistService,
   ) {}
 
@@ -70,8 +75,16 @@ export class FavsService {
     return this.favorites;
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} fav`;
+  findOneTrack(id: string) {
+    return this.tracks.get(id);
+  }
+
+  findOneAlbum(id: string) {
+    return this.albums.get(id);
+  }
+
+  findOneArtist(id: string) {
+    return this.artists.get(id);
   }
 
   removeTrack(id: string) {

@@ -1,12 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { IAlbum } from './interfaces/album.interface';
 import { randomUUID } from 'crypto';
+import { FavsService } from 'src/favs/favs.service';
+import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
   private albums = new Map<string, IAlbum>();
+
+  constructor(
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
+    @Inject(forwardRef(() => TrackService))
+    private readonly trackService: TrackService,
+  ) {}
+
   create(createAlbumDto: CreateAlbumDto) {
     const newAlbum: IAlbum = {
       id: randomUUID(),
@@ -48,5 +63,15 @@ export class AlbumService {
       throw new NotFoundException('Album not found.');
     }
     this.albums.delete(id);
+    const albumInFavs = this.favsService.findOneAlbum(id);
+    if (albumInFavs) {
+      this.favsService.removeAlbum(id);
+    }
+    this.trackService.findAll().forEach((track) => {
+      if (track.albumId === id) {
+        track.albumId = null;
+        this.trackService.update(track.id, track);
+      }
+    });
   }
 }

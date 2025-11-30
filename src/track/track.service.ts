@@ -1,12 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { ITrack } from './interfaces/track.interface';
 import { randomUUID } from 'crypto';
+import { FavsService } from 'src/favs/favs.service';
 
 @Injectable()
 export class TrackService {
   private tracks = new Map<string, ITrack>();
+
+  constructor(
+    @Inject(forwardRef(() => FavsService))
+    private readonly favsService: FavsService,
+  ) {}
 
   create(createTrackDto: CreateTrackDto) {
     const newTrack: ITrack = {
@@ -51,5 +62,9 @@ export class TrackService {
       throw new NotFoundException('Track not found.');
     }
     this.tracks.delete(id);
+    const trackInFavs = this.favsService.findOneTrack(id);
+    if (trackInFavs) {
+      this.favsService.removeTrack(id);
+    }
   }
 }
