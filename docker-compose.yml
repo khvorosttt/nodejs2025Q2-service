@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: home-library-service
+    image: khvorosttt/home-library-service
+    env_file:
+      - .env
+    ports:
+      - ${PORT}:${PORT}
+    restart: always
+    networks:
+      - home-library-network
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - home-library-network
+volumes:
+  pgdata:
+networks:
+  home-library-network:
+    driver: bridge
