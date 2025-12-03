@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import 'dotenv';
+import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { readFile } from 'fs/promises';
 import { join } from 'path';

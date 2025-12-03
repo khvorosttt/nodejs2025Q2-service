@@ -11,3 +11,42 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id    String     @id @default(uuid()) @unique
+  login String
+  password String
+  version Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Artist {
+  id    String     @id @default(uuid()) @unique
+  name String
+  grammy Boolean @default(false)
+  tracks Track[]
+  albums Album[]
+  isFavorite Boolean @default(false)
+}
+
+model Track {
+  id    String     @id @default(uuid()) @unique
+  name String
+  artist Artist?   @relation(references: [id], fields: [artistId], onDelete: SetNull)
+  artistId String?
+  album Album?   @relation(references: [id], fields: [albumId], onDelete: SetNull)
+  albumId String?
+  duration Int
+  isFavorite Boolean @default(false)
+}
+
+model Album {
+  id    String     @id @default(uuid()) @unique
+  name String
+  year Int
+  artist Artist?   @relation(references: [id], fields: [artistId], onDelete: SetNull)
+  artistId String?
+  tracks Track[]
+  isFavorite Boolean @default(false)
+}
