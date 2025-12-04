@@ -5,37 +5,33 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { IUser } from './interfaces/user.interface';
 import { User } from './entities/user.entity';
-import { randomUUID } from 'crypto';
 import { plainToClass } from 'class-transformer';
+import { PrismadbService } from 'src/prismadb/prismadb.service';
 
 @Injectable()
 export class UserService {
-  private users = new Map<string, IUser>();
+  constructor(private readonly prisma: PrismadbService) {}
 
-  create(createUserDto: CreateUserDto): User {
-    const currentDate = new Date().getTime();
-    const newUser: IUser = {
-      id: randomUUID(),
-      login: createUserDto.login,
-      password: createUserDto.password,
-      version: 1,
-      createdAt: currentDate,
-      updatedAt: currentDate,
-    };
-    this.users.set(newUser.id, newUser);
+  async create(createUserDto: CreateUserDto) {
+    const newUser = await this.prisma.user.create({
+      data: createUserDto,
+    });
     return plainToClass(User, newUser);
   }
 
-  findAll() {
-    return Array.from(this.users.values()).map((user) =>
+  async findAll() {
+    return (await this.prisma.user.findMany()).map((user) =>
       plainToClass(User, user),
     );
   }
 
-  findOne(id: string) {
-    const user = this.users.get(id);
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
     if (user) {
       return plainToClass(User, user);
     } else {
@@ -43,8 +39,12 @@ export class UserService {
     }
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    const user = this.users.get(id);
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
     if (!user) {
       throw new NotFoundException('User not found.');
     }
@@ -54,17 +54,34 @@ export class UserService {
       );
     }
     user.version++;
-    user.updatedAt = new Date().getTime();
     user.password = updateUserDto.newPassword;
-    this.users.set(user.id, user);
-    return plainToClass(User, user);
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        password: updateUserDto.newPassword,
+        version: user.version,
+        updatedAt: new Date(),
+      },
+    });
+    return plainToClass(User, updatedUser);
   }
 
-  remove(id: string) {
-    const user = this.users.get(id);
+  async remove(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
     if (!user) {
       throw new NotFoundException('User not found.');
+    } else {
+      await this.prisma.user.delete({
+        where: {
+          id,
+        },
+      });
     }
-    this.users.delete(id);
   }
 }
