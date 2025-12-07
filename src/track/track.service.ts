@@ -1,25 +1,13 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { ITrack } from './interfaces/track.interface';
-import { FavsService } from 'src/favs/favs.service';
 import { PrismadbService } from 'src/prismadb/prismadb.service';
 import { objectCropping } from 'src/common/utils';
 
 @Injectable()
 export class TrackService {
-  private tracks = new Map<string, ITrack>();
-
-  constructor(
-    @Inject(forwardRef(() => FavsService))
-    private readonly favsService: FavsService,
-    private readonly prisma: PrismadbService,
-  ) {}
+  constructor(private readonly prisma: PrismadbService) {}
 
   async create(createTrackDto: CreateTrackDto) {
     const newTrack: ITrack = await this.prisma.track.create({
@@ -64,7 +52,7 @@ export class TrackService {
     track.artistId = updateTrackDto.artistId || track.artistId;
     track.albumId = updateTrackDto.albumId || track.albumId;
     track.duration = updateTrackDto.duration || track.duration;
-    this.prisma.track.update({
+    await this.prisma.track.update({
       where: {
         id,
       },
@@ -82,14 +70,10 @@ export class TrackService {
     if (!track) {
       throw new NotFoundException('Track not found.');
     }
-    this.prisma.track.delete({
+    await this.prisma.track.delete({
       where: {
         id,
       },
     });
-    const trackInFavs = this.favsService.findOneTrack(id);
-    if (trackInFavs) {
-      this.favsService.removeTrack(id);
-    }
   }
 }

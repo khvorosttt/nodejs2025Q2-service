@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { FavsService } from 'src/favs/favs.service';
 import { TrackService } from 'src/track/track.service';
 import { PrismadbService } from 'src/prismadb/prismadb.service';
 import { objectCropping } from 'src/common/utils';
@@ -14,8 +13,6 @@ import { objectCropping } from 'src/common/utils';
 @Injectable()
 export class AlbumService {
   constructor(
-    @Inject(forwardRef(() => FavsService))
-    private readonly favsService: FavsService,
     @Inject(forwardRef(() => TrackService))
     private readonly trackService: TrackService,
     private readonly prisma: PrismadbService,
@@ -85,10 +82,6 @@ export class AlbumService {
         id,
       },
     });
-    const albumInFavs = this.favsService.findOneAlbum(id);
-    if (albumInFavs) {
-      this.favsService.removeAlbum(id);
-    }
     (await this.trackService.findAll()).forEach((track) => {
       if (track.albumId === id) {
         track.albumId = null;
