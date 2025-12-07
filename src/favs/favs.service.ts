@@ -33,8 +33,10 @@ export class FavsService {
     private readonly artistsService: ArtistService,
   ) {}
 
-  addTrack(id: string) {
-    const track = this.tracksService.findAll().find((track) => track.id === id);
+  async addTrack(id: string) {
+    const track = (await this.tracksService.findAll()).find(
+      (track) => track.id === id,
+    );
     if (track) {
       if (!this.tracks.has(track.id)) {
         this.tracks.set(track.id, track);
@@ -45,8 +47,10 @@ export class FavsService {
     }
   }
 
-  addAlbum(id: string) {
-    const album = this.albumsService.findAll().find((album) => album.id === id);
+  async addAlbum(id: string) {
+    const album = (await this.albumsService.findAll()).find(
+      (album) => album.id === id,
+    );
     if (album) {
       if (!this.albums.has(album.id)) {
         this.albums.set(album.id, album);
@@ -57,10 +61,10 @@ export class FavsService {
     }
   }
 
-  addArtist(id: string) {
-    const artist = this.artistsService
-      .findAll()
-      .find((artist) => artist.id === id);
+  async addArtist(id: string) {
+    const artist = (await this.artistsService.findAll()).find(
+      (artist) => artist.id === id,
+    );
     if (artist) {
       if (!this.artists.has(artist.id)) {
         this.artists.set(artist.id, artist);
