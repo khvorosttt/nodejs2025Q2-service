@@ -6,11 +6,17 @@ REST API service for managing your home music library. Built with NestJS, this s
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+- Docker Desktop - [Download & Install Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ## Downloading
 
 ```
 git clone {repository URL}
+```
+
+## Switch to development branch
+```
+git checkout home-library-service-part-2
 ```
 
 ## Installing NPM modules
@@ -23,6 +29,61 @@ npm install
 
 ```
 npm install --legacy-peer-deps
+```
+
+## Configure environment variables
+```
+cp .env.example .env
+```
+
+## Start with Docker Compose (recommended)
+```
+# Build and start all services
+docker-compose up --build
+
+# Or run in detached mode
+docker-compose up -d --build
+```
+
+## Apply database migrations
+```
+# In a new terminal, run migrations
+docker-compose exec app npx prisma migrate deploy
+
+# Or for development
+docker-compose exec app npx prisma db push
+```
+
+## Generate Prisma Client
+```
+# Generate TypeScript client for database access
+docker-compose run --rm app npx prisma generate
+```
+
+## Local Development with Docker Database (Recommended for Dev)
+```
+# 1. Start only the PostgreSQL database in Docker
+docker-compose up postgres -d
+
+# 2. Configure environment for local development
+cp .env.example .env
+# Edit .env and set:
+# DATABASE_URL=postgresql://postgres:password@localhost:5432/home_library
+
+# 3. Install dependencies
+npm install
+
+# 4. Generate Prisma Client
+npx prisma generate
+
+# 5. Apply database migrations
+npx prisma migrate deploy
+
+# 6. Start the application locally
+npm run start:dev
+
+# 7. Test application
+npm run test
 ```
 
 ## Running application
