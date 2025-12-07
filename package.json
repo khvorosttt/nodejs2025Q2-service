@@ -23,7 +23,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "start:hotreload": "nodemon --watch src --ext ts --exec \"nest start\" -L"
+    "start:hotreload": "nodemon --watch src --ext ts --exec \"nest start\" -L",
+    "audit": "npm audit"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.16",
