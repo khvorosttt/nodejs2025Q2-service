@@ -67,8 +67,6 @@ docker-compose up postgres -d
 
 # 2. Configure environment for local development
 cp .env.example .env
-# Edit .env and set:
-# DATABASE_URL=postgresql://postgres:password@localhost:5432/home_library
 
 # 3. Install dependencies
 npm install
