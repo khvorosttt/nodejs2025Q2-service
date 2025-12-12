@@ -7,13 +7,16 @@ import {
   Delete,
   HttpCode,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UUIDValidationPipe } from 'src/common/pipes/uuid-validation.pipe';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @Controller('user')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

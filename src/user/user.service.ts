@@ -98,4 +98,13 @@ export class UserService {
       });
     }
   }
+
+  async findUserByLogin(login: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        login: login,
+      },
+    });
+    return user;
+  }
 }
