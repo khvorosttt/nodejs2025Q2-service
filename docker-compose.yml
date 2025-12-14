@@ -1,0 +1,39 @@
+services:
+  app:
+    container_name: home-library-service
+    build: .
+    image: khvorosttt/home-library-service
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public"
+    ports:
+      - ${PORT}:${PORT}
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - home-library-network
+    command: npm run start:hotreload
+    volumes:
+      - ./src:/usr/app/src
+      - /usr/app/node_modules
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - home-library-network
+volumes:
+  pgdata:
+networks:
+  home-library-network:
+    driver: bridge

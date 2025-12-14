@@ -4,4 +4,5 @@ export interface ITrack {
   artistId: string | null;
   albumId: string | null;
   duration: number;
+  isFavorite?: boolean;
 }

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FavsService } from './favs.service';
+import { PrismadbService } from './prismadb.service';
 
-describe('FavsService', () => {
-  let service: FavsService;
+describe('PrismadbService', () => {
+  let service: PrismadbService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FavsService],
+      providers: [PrismadbService],
     }).compile();
 
-    service = module.get<FavsService>(FavsService);
+    service = module.get<PrismadbService>(PrismadbService);
   });
 
   it('should be defined', () => {
