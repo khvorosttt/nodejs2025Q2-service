@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +11,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { tokenConfig } from './token/token.config';
+import { IUser } from 'src/user/interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -38,14 +40,41 @@ export class AuthService {
     if (!isCorrectPassword) {
       throw new ForbiddenException("Passwords doesn't match.");
     }
+    return this.generateTokens({ id: user.id, login: user.login });
+  }
+
+  async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: tokenConfig.refresh.secret,
+      });
+      const { userId, login } = payload;
+      const user = await this.usersService.findOne(userId);
+      if (!user || user.login !== login) {
+        throw new ForbiddenException('User not found or login mismatch');
+      }
+      return this.generateTokens({ id: userId, login });
+    } catch (_) {
+      throw new ForbiddenException('Invalid or expired refresh token');
+    }
+  }
+
+  async generateTokens(user: Pick<IUser, 'id' | 'login'>) {
     const tokenPayload = {
-      id: user.id,
+      userId: user.id,
       login: user.login,
     };
-    const token = await this.jwtService.signAsync(
+    const accessToken = await this.jwtService.signAsync(
       tokenPayload,
       tokenConfig.access,
     );
-    return { accessToken: token };
+    const refreshToken = await this.jwtService.signAsync(
+      tokenPayload,
+      tokenConfig.refresh,
+    );
+    return { accessToken, refreshToken };
   }
 }
