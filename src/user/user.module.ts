@@ -7,5 +7,6 @@ import { PrismadbModule } from 'src/prismadb/prismadb.module';
   controllers: [UserController],
   providers: [UserService],
   imports: [PrismadbModule],
+  exports: [UserService],
 })
 export class UserModule {}

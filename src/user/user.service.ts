@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { plainToClass } from 'class-transformer';
 import { PrismadbService } from 'src/prismadb/prismadb.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,13 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     const newUser = await this.prisma.user.create({
-      data: createUserDto,
+      data: {
+        login: createUserDto.login,
+        password: await bcrypt.hash(
+          createUserDto.password,
+          Number(process.env.CRYPT_SALT) || 10,
+        ),
+      },
     });
     return plainToClass(User, newUser);
   }
@@ -48,7 +55,11 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-    if (user.password !== updateUserDto.oldPassword) {
+    const isCorrectOldPassword = await bcrypt.compare(
+      updateUserDto.oldPassword,
+      user.password,
+    );
+    if (!isCorrectOldPassword) {
       throw new ForbiddenException(
         'The old password does not match the one stored in the database.',
       );
@@ -60,7 +71,10 @@ export class UserService {
         id,
       },
       data: {
-        password: updateUserDto.newPassword,
+        password: await bcrypt.hash(
+          updateUserDto.newPassword,
+          Number(process.env.CRYPT_SALT) || 10,
+        ),
         version: user.version,
         updatedAt: new Date(),
       },
@@ -83,5 +97,14 @@ export class UserService {
         },
       });
     }
+  }
+
+  async findUserByLogin(login: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        login: login,
+      },
+    });
+    return user;
   }
 }

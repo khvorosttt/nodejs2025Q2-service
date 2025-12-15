@@ -1,22 +1,12 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { TrackService } from 'src/track/track.service';
 import { PrismadbService } from 'src/prismadb/prismadb.service';
 import { objectCropping } from 'src/common/utils';
 
 @Injectable()
 export class AlbumService {
-  constructor(
-    @Inject(forwardRef(() => TrackService))
-    private readonly trackService: TrackService,
-    private readonly prisma: PrismadbService,
-  ) {}
+  constructor(private readonly prisma: PrismadbService) {}
 
   async create(createAlbumDto: CreateAlbumDto) {
     const newAlbum = await this.prisma.album.create({
@@ -81,12 +71,6 @@ export class AlbumService {
       where: {
         id,
       },
-    });
-    (await this.trackService.findAll()).forEach((track) => {
-      if (track.albumId === id) {
-        track.albumId = null;
-        this.trackService.update(track.id, track);
-      }
     });
   }
 }
